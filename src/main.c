@@ -7,6 +7,7 @@
 
 #define N 4000
 #define DUPLICATE_RANGE 10
+#define REPEAT 5
 
 /* 배열 복사 */
 void copyArray(int dest[], const int src[], int n) {
@@ -15,35 +16,32 @@ void copyArray(int dest[], const int src[], int n) {
     }
 }
 
-/* 이미 정렬된 배열 생성 */
+/* 입력 데이터 생성 */
 void makeSorted(int a[], int n) {
     for (int i = 0; i < n; i++) {
         a[i] = i;
     }
 }
 
-/* 역순 배열 생성 */
 void makeReverse(int a[], int n) {
     for (int i = 0; i < n; i++) {
         a[i] = n - i;
     }
 }
 
-/* 무작위 배열 생성 */
 void makeRandom(int a[], int n) {
     for (int i = 0; i < n; i++) {
         a[i] = rand();
     }
 }
 
-/* 중복 값이 많은 배열 생성 */
 void makeDuplicates(int a[], int n) {
     for (int i = 0; i < n; i++) {
         a[i] = rand() % DUPLICATE_RANGE;
     }
 }
 
-/* 정렬이 제대로 되었는지 확인 */
+/* 정렬 성공 여부 확인 */
 int isSorted(const int a[], int n) {
     for (int i = 1; i < n; i++) {
         if (a[i - 1] > a[i]) {
@@ -53,8 +51,12 @@ int isSorted(const int a[], int n) {
     return 1;
 }
 
-/* 하나의 입력에 대해 세 알고리즘 실험 */
-void runExperiment(const char *inputName, const int original[], int n) {
+/* 한 종류의 입력에 대해 세 알고리즘 실험 */
+void runExperiment(const char *inputName,
+                   const int original[],
+                   int n,
+                   FILE *csv) {
+
     int *a = malloc((size_t)n * sizeof(int));
 
     if (a == NULL) {
@@ -62,66 +64,117 @@ void runExperiment(const char *inputName, const int original[], int n) {
         exit(1);
     }
 
-    SortStats stats;
-    clock_t start;
-    clock_t end;
-    double timeTaken;
-
     printf("\n=== %s ===\n", inputName);
     printf("%-18s %12s %12s %12s %8s\n",
-           "Algorithm", "Time(ms)", "Comparisons", "Moves", "Sorted");
+           "Algorithm",
+           "AvgTime(ms)",
+           "Comparisons",
+           "Moves",
+           "Sorted");
+
     printf("-----------------------------------------------------------------\n");
 
-    /* Selection Sort */
-    copyArray(a, original, n);
+    /* ---------------- Selection Sort ---------------- */
 
-    start = clock();
-    stats = selectionSort(a, n);
-    end = clock();
+    double totalTime = 0.0;
+    SortStats stats = {0, 0};
 
-    timeTaken = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+    for (int r = 0; r < REPEAT; r++) {
+        copyArray(a, original, n);
+
+        clock_t start = clock();
+        stats = selectionSort(a, n);
+        clock_t end = clock();
+
+        totalTime +=
+            ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+    }
+
+    double averageTime = totalTime / REPEAT;
 
     printf("%-18s %12.3f %12lld %12lld %8s\n",
            "Selection",
-           timeTaken,
+           averageTime,
            stats.comparisons,
            stats.moves,
            isSorted(a, n) ? "YES" : "NO");
 
-    /* Insertion Sort */
-    copyArray(a, original, n);
+    fprintf(csv, "%s,%s,%.3f,%lld,%lld\n",
+            inputName,
+            "Selection",
+            averageTime,
+            stats.comparisons,
+            stats.moves);
 
-    start = clock();
-    stats = insertionSort(a, n);
-    end = clock();
 
-    timeTaken = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+    /* ---------------- Insertion Sort ---------------- */
+
+    totalTime = 0.0;
+
+    for (int r = 0; r < REPEAT; r++) {
+        copyArray(a, original, n);
+
+        clock_t start = clock();
+        stats = insertionSort(a, n);
+        clock_t end = clock();
+
+        totalTime +=
+            ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+    }
+
+    averageTime = totalTime / REPEAT;
 
     printf("%-18s %12.3f %12lld %12lld %8s\n",
            "Insertion",
-           timeTaken,
+           averageTime,
            stats.comparisons,
            stats.moves,
            isSorted(a, n) ? "YES" : "NO");
 
-    /* Cocktail Shaker Sort */
-    copyArray(a, original, n);
+    fprintf(csv, "%s,%s,%.3f,%lld,%lld\n",
+            inputName,
+            "Insertion",
+            averageTime,
+            stats.comparisons,
+            stats.moves);
 
-    start = clock();
-    stats = cocktailShakerSort(a, n);
-    end = clock();
 
-    timeTaken = ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+    /* ------------- Cocktail Shaker Sort ------------- */
+
+    totalTime = 0.0;
+
+    for (int r = 0; r < REPEAT; r++) {
+        copyArray(a, original, n);
+
+        clock_t start = clock();
+        stats = cocktailShakerSort(a, n);
+        clock_t end = clock();
+
+        totalTime +=
+            ((double)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+    }
+
+    averageTime = totalTime / REPEAT;
 
     printf("%-18s %12.3f %12lld %12lld %8s\n",
            "Cocktail Shaker",
-           timeTaken,
+           averageTime,
            stats.comparisons,
            stats.moves,
            isSorted(a, n) ? "YES" : "NO");
 
+    fprintf(csv, "%s,%s,%.3f,%lld,%lld\n",
+            inputName,
+            "Cocktail Shaker",
+            averageTime,
+            stats.comparisons,
+            stats.moves);
+
     free(a);
 }
+
+
+/* ---------------- Stability Test ---------------- */
 
 void copyRecords(Record dest[], const Record src[], int n) {
     for (int i = 0; i < n; i++) {
@@ -130,6 +183,7 @@ void copyRecords(Record dest[], const Record src[], int n) {
 }
 
 void runStabilityTest(void) {
+
     Record original[] = {
         {2, 0},
         {2, 1},
@@ -151,20 +205,31 @@ void runStabilityTest(void) {
     cocktailShakerSortRecords(cocktailData, n);
 
     printf("\n=== Stability Test ===\n");
+
     printf("%-18s %s\n",
            "Selection",
-           isStable(selectionData, n) ? "STABLE" : "UNSTABLE");
+           isStable(selectionData, n)
+               ? "STABLE"
+               : "UNSTABLE");
 
     printf("%-18s %s\n",
            "Insertion",
-           isStable(insertionData, n) ? "STABLE" : "UNSTABLE");
+           isStable(insertionData, n)
+               ? "STABLE"
+               : "UNSTABLE");
 
     printf("%-18s %s\n",
            "Cocktail Shaker",
-           isStable(cocktailData, n) ? "STABLE" : "UNSTABLE");
+           isStable(cocktailData, n)
+               ? "STABLE"
+               : "UNSTABLE");
 }
 
+
+/* ---------------- Main ---------------- */
+
 int main(void) {
+
     int *data = malloc((size_t)N * sizeof(int));
 
     if (data == NULL) {
@@ -172,30 +237,51 @@ int main(void) {
         return 1;
     }
 
+    FILE *csv = fopen("results.csv", "w");
+
+    if (csv == NULL) {
+        printf("Could not create results.csv\n");
+        free(data);
+        return 1;
+    }
+
+    /* CSV header */
+    fprintf(csv,
+            "Input,Algorithm,AvgTime_ms,Comparisons,Moves\n");
+
     /*
-     * seed를 고정한다.
-     * 따라서 프로그램을 다시 실행해도 동일한 무작위 입력을 사용한다.
+     * 고정 seed를 사용하여
+     * 동일한 무작위 입력을 재현한다.
      */
     srand(42);
 
     printf("Sorting Algorithm Experiment\n");
     printf("N = %d\n", N);
+    printf("Time measurement = average of %d runs\n", REPEAT);
 
+    /* Random */
     makeRandom(data, N);
-    runExperiment("Random", data, N);
+    runExperiment("Random", data, N, csv);
 
+    /* Sorted */
     makeSorted(data, N);
-    runExperiment("Sorted", data, N);
+    runExperiment("Sorted", data, N, csv);
 
+    /* Reverse */
     makeReverse(data, N);
-    runExperiment("Reverse", data, N);
+    runExperiment("Reverse", data, N, csv);
 
+    /* Many Duplicates */
     makeDuplicates(data, N);
-    runExperiment("Many Duplicates", data, N);
+    runExperiment("Many Duplicates", data, N, csv);
 
+    /* Stability */
     runStabilityTest();
 
+    fclose(csv);
     free(data);
+
+    printf("\nExperiment results saved to results.csv\n");
 
     return 0;
 }

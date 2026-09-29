@@ -1,0 +1,13 @@
+Input,Algorithm,AvgTime_ms,Comparisons,Moves
+Random,Selection,20.091,7998000,11949
+Random,Insertion,2.822,3992461,3996465
+Random,Cocktail Shaker,34.007,5986985,11965401
+Sorted,Selection,20.250,7998000,0
+Sorted,Insertion,0.012,3999,7998
+Sorted,Cocktail Shaker,0.007,3999,0
+Reverse,Selection,20.053,7998000,6000
+Reverse,Insertion,5.280,7998000,8005998
+Reverse,Cocktail Shaker,63.802,7998000,23994000
+Many Duplicates,Selection,20.075,7998000,10716
+Many Duplicates,Insertion,2.527,3617211,3621214
+Many Duplicates,Cocktail Shaker,30.815,6012972,10839648
