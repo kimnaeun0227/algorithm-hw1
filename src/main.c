@@ -123,6 +123,47 @@ void runExperiment(const char *inputName, const int original[], int n) {
     free(a);
 }
 
+void copyRecords(Record dest[], const Record src[], int n) {
+    for (int i = 0; i < n; i++) {
+        dest[i] = src[i];
+    }
+}
+
+void runStabilityTest(void) {
+    Record original[] = {
+        {2, 0},
+        {2, 1},
+        {1, 2}
+    };
+
+    int n = (int)(sizeof(original) / sizeof(original[0]));
+
+    Record selectionData[3];
+    Record insertionData[3];
+    Record cocktailData[3];
+
+    copyRecords(selectionData, original, n);
+    copyRecords(insertionData, original, n);
+    copyRecords(cocktailData, original, n);
+
+    selectionSortRecords(selectionData, n);
+    insertionSortRecords(insertionData, n);
+    cocktailShakerSortRecords(cocktailData, n);
+
+    printf("\n=== Stability Test ===\n");
+    printf("%-18s %s\n",
+           "Selection",
+           isStable(selectionData, n) ? "STABLE" : "UNSTABLE");
+
+    printf("%-18s %s\n",
+           "Insertion",
+           isStable(insertionData, n) ? "STABLE" : "UNSTABLE");
+
+    printf("%-18s %s\n",
+           "Cocktail Shaker",
+           isStable(cocktailData, n) ? "STABLE" : "UNSTABLE");
+}
+
 int main(void) {
     int *data = malloc((size_t)N * sizeof(int));
 
@@ -151,6 +192,8 @@ int main(void) {
 
     makeDuplicates(data, N);
     runExperiment("Many Duplicates", data, N);
+
+    runStabilityTest();
 
     free(data);
 

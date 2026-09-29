@@ -109,3 +109,95 @@ SortStats cocktailShakerSort(int a[], int n) {
 
     return stats;
 }
+/* -------------------------------------------------
+ * Stability Test
+ * ------------------------------------------------- */
+
+/* Selection Sort - Record version */
+void selectionSortRecords(Record a[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int minIndex = i;
+
+        for (int j = i + 1; j < n; j++) {
+            if (a[j].key < a[minIndex].key) {
+                minIndex = j;
+            }
+        }
+
+        if (minIndex != i) {
+            Record temp = a[i];
+            a[i] = a[minIndex];
+            a[minIndex] = temp;
+        }
+    }
+}
+
+
+/* Insertion Sort - Record version */
+void insertionSortRecords(Record a[], int n) {
+    for (int i = 1; i < n; i++) {
+        Record current = a[i];
+        int j = i - 1;
+
+        while (j >= 0 && a[j].key > current.key) {
+            a[j + 1] = a[j];
+            j--;
+        }
+
+        a[j + 1] = current;
+    }
+}
+
+
+/* Cocktail Shaker Sort - Record version */
+void cocktailShakerSortRecords(Record a[], int n) {
+    int start = 0;
+    int end = n - 1;
+    int swapped = 1;
+
+    while (swapped) {
+        swapped = 0;
+
+        /* 왼쪽 -> 오른쪽 */
+        for (int i = start; i < end; i++) {
+            if (a[i].key > a[i + 1].key) {
+                Record temp = a[i];
+                a[i] = a[i + 1];
+                a[i + 1] = temp;
+                swapped = 1;
+            }
+        }
+
+        if (!swapped) {
+            break;
+        }
+
+        end--;
+        swapped = 0;
+
+        /* 오른쪽 -> 왼쪽 */
+        for (int i = end; i > start; i--) {
+            if (a[i - 1].key > a[i].key) {
+                Record temp = a[i - 1];
+                a[i - 1] = a[i];
+                a[i] = temp;
+                swapped = 1;
+            }
+        }
+
+        start++;
+    }
+}
+
+
+/* Stability 검사 */
+int isStable(const Record a[], int n) {
+    for (int i = 1; i < n; i++) {
+        if (a[i - 1].key == a[i].key &&
+            a[i - 1].tag > a[i].tag) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
